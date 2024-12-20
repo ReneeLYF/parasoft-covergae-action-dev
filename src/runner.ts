@@ -14,8 +14,8 @@ export class CoverageParserRunner {
             return Promise.reject("Coverage node not found");
         }
 
-        const markdown = this.generateMarkdownContent(coverageNode.packages);
-        const totalCoverage = this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
+        const markdown = await this.generateMarkdownContent(coverageNode.packages);
+        const totalCoverage = await this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
 
         await core.summary
             .addHeading('Parasoft Coverage')
@@ -24,7 +24,7 @@ export class CoverageParserRunner {
                 + markdown + "</tbody></table>")
             .write();
 
-        return {exitCode: 1};
+        return {exitCode: 0};
     }
 
     private async generateMarkdownContent(packagesNode: Map<string, types.CoberturaPackageNode>) {

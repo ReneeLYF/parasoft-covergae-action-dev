@@ -41,15 +41,15 @@ class CoverageParserRunner {
         if (!coverageNode) {
             return Promise.reject("Coverage node not found");
         }
-        const markdown = this.generateMarkdownContent(coverageNode.packages);
-        const totalCoverage = this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
+        const markdown = await this.generateMarkdownContent(coverageNode.packages);
+        const totalCoverage = await this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
         await core.summary
             .addHeading('Parasoft Coverage')
             .addRaw("<table><tbody><tr><th>Coverage&emsp;(covered/total - percentage)</th></tr>"
             + "<tr><td><b>Total coverage&emsp;(" + totalCoverage + ")</b></td></tr>"
             + markdown + "</tbody></table>")
             .write();
-        return { exitCode: 1 };
+        return { exitCode: 0 };
     }
     async generateMarkdownContent(packagesNode) {
         if (!packagesNode || (packagesNode.size === 0)) {
