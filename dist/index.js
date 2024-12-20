@@ -58,29 +58,12 @@ class CoverageParserRunner {
         const markdownRows = await Promise.all(Array.from(packagesNode.entries()).map(async ([packageName, packageNode]) => {
             const { coveredLines, totalLines, markdownContent } = await this.calculatePackageCoverage(packageNode);
             const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
-            return `
-                    <tr>
-                        <td>
-                            <details>
-                                <summary>${packageName} (${packageCoverage})</summary>
-                                <table>
-                                    <tbody>${markdownContent}</tbody>
-                                </table>
-                            </details>
-                        </td>
-                    </tr>
-                `;
+            return "<tr><td><details>" +
+                "<summary>" + packageName + "&emsp;(" + packageCoverage + ")</summary>" +
+                "<table><tbody>" + markdownContent + "</tbody></table>" +
+                "</details></td></tr>";
         }));
         return markdownRows.join('');
-        // return Array.from(packagesNode.entries()).map(async ([packageName, packageNode]) => {
-        //     const {coveredLines, totalLines, markdownContent} = await this.calculatePackageCoverage(packageNode);
-        //     const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
-        //
-        //     return "<tr><td><details>" +
-        //         "<summary>" + packageName + "&emsp;(" + packageCoverage + ")</summary>" +
-        //         "<table><tbody>" + markdownContent + "</tbody></table>" +
-        //         "</details></td></tr>";
-        // }).join('');
     }
     async calculatePackageCoverage(packageNode) {
         if (!packageNode) {
@@ -93,12 +76,7 @@ class CoverageParserRunner {
             coveredLines += classNode.coveredLines;
             totalLines += classNode.lines.length;
             const classCoverage = this.formatCoverage(classNode.coveredLines, classNode.lines.length, classNode.lineRate);
-            markdownContent += `
-                <tr>
-                    <td>&emsp;${classNode.name} (${classCoverage})</td>
-                </tr>
-            `;
-            // markdownContent += "<tr><td>&emsp;" + classNode.name + "&emsp;(" + classCoverage + ")</td></tr>";
+            markdownContent += "<tr><td>&emsp;" + classNode.name + "&emsp;(" + classCoverage + ")</td></tr>";
         });
         return { coveredLines, totalLines, markdownContent };
     }
