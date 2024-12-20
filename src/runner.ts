@@ -3,8 +3,8 @@ import * as types from './types';
 
 export class CoverageParserRunner {
     async run() : Promise<types.RunDetails> {
-        // TODO: Get the actual coverage node data
-        const coverageNode = await this.getCoverageNode(); // Simulate coverageNode input for testing the structure implemented in current task
+        // TODO: Simulate coverageNode input for testing the structure implemented in current task
+        const coverageNode = this.getCoverageNode();
 
         await this.generateCoverageSummary(coverageNode);
         return { exitCode: 0 };
@@ -27,7 +27,7 @@ export class CoverageParserRunner {
             .write();
     }
 
-    private async generateMarkdownContent(packagesNode: Map<string, types.CoberturaPackageNode>) {
+    private generateMarkdownContent(packagesNode: Map<string, types.CoberturaPackageNode>) {
         if (!packagesNode || packagesNode.size === 0) {
             core.warning("No packages found in coverage data.");
             return '';
@@ -35,7 +35,7 @@ export class CoverageParserRunner {
 
         const markdownRows: string[] = [];
         for (const [packageName, packageNode] of packagesNode.entries()) {
-            const { coveredLines, totalLines, markdownContent } = await this.calculatePackageCoverage(packageNode);
+            const { coveredLines, totalLines, markdownContent } = this.calculatePackageCoverage(packageNode);
             const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
 
             markdownRows.push("<tr><td><details>" +
@@ -79,7 +79,7 @@ export class CoverageParserRunner {
         return `${covered}/${total} - ${(rate * 100).toFixed(2)}%`;
     }
 
-    private async getCoverageNode(): Promise<types.CoberturaCoverageNode> {
+    private getCoverageNode(): types.CoberturaCoverageNode {
         // Simulate coverage data
         return {
             lineRate: 0.85,

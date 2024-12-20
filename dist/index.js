@@ -33,8 +33,8 @@ exports.CoverageParserRunner = void 0;
 const core = __nccwpck_require__(7484);
 class CoverageParserRunner {
     async run() {
-        // TODO: Get the actual coverage node data
-        const coverageNode = await this.getCoverageNode(); // Simulate coverageNode input for testing the structure implemented in current task
+        // TODO: Simulate coverageNode input for testing the structure implemented in current task
+        const coverageNode = this.getCoverageNode();
         await this.generateCoverageSummary(coverageNode);
         return { exitCode: 0 };
     }
@@ -52,14 +52,14 @@ class CoverageParserRunner {
             + markdown + "</tbody></table>")
             .write();
     }
-    async generateMarkdownContent(packagesNode) {
+    generateMarkdownContent(packagesNode) {
         if (!packagesNode || packagesNode.size === 0) {
             core.warning("No packages found in coverage data.");
             return '';
         }
         const markdownRows = [];
         for (const [packageName, packageNode] of packagesNode.entries()) {
-            const { coveredLines, totalLines, markdownContent } = await this.calculatePackageCoverage(packageNode);
+            const { coveredLines, totalLines, markdownContent } = this.calculatePackageCoverage(packageNode);
             const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
             markdownRows.push("<tr><td><details>" +
                 "<summary>" + packageName + "&emsp;(" + packageCoverage + ")</summary>" +
@@ -93,7 +93,7 @@ class CoverageParserRunner {
         }
         return `${covered}/${total} - ${(rate * 100).toFixed(2)}%`;
     }
-    async getCoverageNode() {
+    getCoverageNode() {
         // Simulate coverage data
         return {
             lineRate: 0.85,
