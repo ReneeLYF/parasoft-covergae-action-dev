@@ -4,18 +4,20 @@ import * as types from './types';
 export class CoverageParserRunner {
     async run() : Promise<types.RunDetails> {
         // TODO: Get the actual coverage node data
-        const coverageNode = await this.getCoverageNode(); // Simulate coverageNode input for testing
+        const coverageNode = await this.getCoverageNode(); // Simulate coverageNode input for testing the structure implemented in current task
 
-        return await this.generateCoverageSummary(coverageNode);
+        await this.generateCoverageSummary(coverageNode);
+        return { exitCode: 0 };
     }
 
-    private async generateCoverageSummary(coverageNode: types.CoberturaCoverageNode): Promise<types.RunDetails> {
+    private async generateCoverageSummary(coverageNode: types.CoberturaCoverageNode) {
         if (!coverageNode) {
-            return Promise.reject("Coverage node not found");
+            core.warning("No coverage data found.");
+            return;
         }
 
-        const markdown = await this.generateMarkdownContent(coverageNode.packages);
-        const totalCoverage = await this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
+        const markdown = this.generateMarkdownContent(coverageNode.packages);
+        const totalCoverage = this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
 
         await core.summary
             .addHeading('Parasoft Coverage')
@@ -23,61 +25,62 @@ export class CoverageParserRunner {
                 + "<tr><td><b>Total coverage&emsp;(" + totalCoverage + ")</b></td></tr>"
                 + markdown + "</tbody></table>")
             .write();
-
-        return {exitCode: 0};
     }
 
     private async generateMarkdownContent(packagesNode: Map<string, types.CoberturaPackageNode>) {
-        if (!packagesNode || (packagesNode.size === 0)) {
-            return Promise.reject("Package not found");
+        if (!packagesNode || packagesNode.size === 0) {
+            core.warning("No packages found in coverage data.");
+            return '';
         }
 
-        const markdownRows = await Promise.all(
-            Array.from(packagesNode.entries()).map(async ([packageName, packageNode]) => {
-                const {coveredLines, totalLines, markdownContent} = await this.calculatePackageCoverage(packageNode);
-                const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
+        const markdownRows: string[] = [];
+        for (const [packageName, packageNode] of packagesNode.entries()) {
+            const { coveredLines, totalLines, markdownContent } = await this.calculatePackageCoverage(packageNode);
+            const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
 
-                return "<tr><td><details>" +
-                        "<summary>" + packageName + "&emsp;(" + packageCoverage + ")</summary>" +
-                        "<table><tbody>" + markdownContent + "</tbody></table>" +
-                        "</details></td></tr>";
-            })
-        );
+            markdownRows.push("<tr><td><details>" +
+                "<summary>" + packageName + "&emsp;(" + packageCoverage + ")</summary>" +
+                "<table><tbody>" + markdownContent + "</tbody></table>" +
+                "</details></td></tr>");
+        }
 
         return markdownRows.join('');
     }
 
-    private async calculatePackageCoverage(packageNode: types.CoberturaPackageNode): Promise<{ coveredLines: number, totalLines: number, markdownContent: string }> {
+    private calculatePackageCoverage(packageNode: types.CoberturaPackageNode): { coveredLines: number, totalLines: number, markdownContent: string } {
         if (!packageNode) {
-            return Promise.reject("Package not found");
+            core.warning("Package node is missing.");
+            return { coveredLines: 0, totalLines: 0, markdownContent: '' };
         }
+
         let coveredLines = 0;
         let totalLines = 0;
-        let markdownContent = '';
+        const markdownRows: string[] = [];
 
-        packageNode.classes.forEach(classNode => {
+        for (const classNode of packageNode.classes.values()) {
             coveredLines += classNode.coveredLines;
             totalLines += classNode.lines.length;
             const classCoverage = this.formatCoverage(classNode.coveredLines, classNode.lines.length, classNode.lineRate);
 
-            markdownContent += "<tr><td>&emsp;" + classNode.name + "&emsp;(" + classCoverage + ")</td></tr>";
-        });
+            markdownRows.push(`<tr><td>&emsp;${classNode.name}&emsp;(${classCoverage})</td></tr>`);
+        }
 
-        return { coveredLines, totalLines, markdownContent };
+        return { coveredLines, totalLines, markdownContent: markdownRows.join('') };
     }
 
-    private formatCoverage(covered: number, total: number, rate: number) {
+    private formatCoverage(covered: number, total: number, rate: number): string {
         if (covered < 0 || total < 0) {
-            return Promise.reject("The covered lines and total lines must be non-negative.")
+            core.warning("The covered lines and total lines must be non-negative.");
         }
         if (rate < 0 || rate > 1) {
-            return Promise.reject('The line rate must be between 0 and 1.');
+            core.warning("The line rate must be between 0 and 1.");
         }
 
         return `${covered}/${total} - ${(rate * 100).toFixed(2)}%`;
     }
 
     private async getCoverageNode(): Promise<types.CoberturaCoverageNode> {
+        // Simulate coverage data
         return {
             lineRate: 0.85,
             linesCovered: 170,

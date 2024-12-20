@@ -10,7 +10,7 @@ export async function run() {
         const outcome = await theRunner.run();
 
         if (outcome.exitCode != 0) {
-            core.setFailed(messages.failed_run_non_zero + outcome.exitCode);
+            // TODO: When implement cobertura transforming
         } else {
             core.info(messages.exit_code + outcome.exitCode);
         }

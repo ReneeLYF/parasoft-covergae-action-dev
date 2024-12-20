@@ -34,62 +34,67 @@ const core = __nccwpck_require__(7484);
 class CoverageParserRunner {
     async run() {
         // TODO: Get the actual coverage node data
-        const coverageNode = await this.getCoverageNode(); // Simulate coverageNode input for testing
-        return await this.generateCoverageSummary(coverageNode);
+        const coverageNode = await this.getCoverageNode(); // Simulate coverageNode input for testing the structure implemented in current task
+        await this.generateCoverageSummary(coverageNode);
+        return { exitCode: 0 };
     }
     async generateCoverageSummary(coverageNode) {
         if (!coverageNode) {
-            return Promise.reject("Coverage node not found");
+            core.warning("No coverage data found.");
+            return;
         }
-        const markdown = await this.generateMarkdownContent(coverageNode.packages);
-        const totalCoverage = await this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
+        const markdown = this.generateMarkdownContent(coverageNode.packages);
+        const totalCoverage = this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
         await core.summary
             .addHeading('Parasoft Coverage')
             .addRaw("<table><tbody><tr><th>Coverage&emsp;(covered/total - percentage)</th></tr>"
             + "<tr><td><b>Total coverage&emsp;(" + totalCoverage + ")</b></td></tr>"
             + markdown + "</tbody></table>")
             .write();
-        return { exitCode: 0 };
     }
     async generateMarkdownContent(packagesNode) {
-        if (!packagesNode || (packagesNode.size === 0)) {
-            return Promise.reject("Package not found");
+        if (!packagesNode || packagesNode.size === 0) {
+            core.warning("No packages found in coverage data.");
+            return '';
         }
-        const markdownRows = await Promise.all(Array.from(packagesNode.entries()).map(async ([packageName, packageNode]) => {
+        const markdownRows = [];
+        for (const [packageName, packageNode] of packagesNode.entries()) {
             const { coveredLines, totalLines, markdownContent } = await this.calculatePackageCoverage(packageNode);
             const packageCoverage = this.formatCoverage(coveredLines, totalLines, packageNode.lineRate);
-            return "<tr><td><details>" +
+            markdownRows.push("<tr><td><details>" +
                 "<summary>" + packageName + "&emsp;(" + packageCoverage + ")</summary>" +
                 "<table><tbody>" + markdownContent + "</tbody></table>" +
-                "</details></td></tr>";
-        }));
+                "</details></td></tr>");
+        }
         return markdownRows.join('');
     }
-    async calculatePackageCoverage(packageNode) {
+    calculatePackageCoverage(packageNode) {
         if (!packageNode) {
-            return Promise.reject("Package not found");
+            core.warning("Package node is missing.");
+            return { coveredLines: 0, totalLines: 0, markdownContent: '' };
         }
         let coveredLines = 0;
         let totalLines = 0;
-        let markdownContent = '';
-        packageNode.classes.forEach(classNode => {
+        const markdownRows = [];
+        for (const classNode of packageNode.classes.values()) {
             coveredLines += classNode.coveredLines;
             totalLines += classNode.lines.length;
             const classCoverage = this.formatCoverage(classNode.coveredLines, classNode.lines.length, classNode.lineRate);
-            markdownContent += "<tr><td>&emsp;" + classNode.name + "&emsp;(" + classCoverage + ")</td></tr>";
-        });
-        return { coveredLines, totalLines, markdownContent };
+            markdownRows.push(`<tr><td>&emsp;${classNode.name}&emsp;(${classCoverage})</td></tr>`);
+        }
+        return { coveredLines, totalLines, markdownContent: markdownRows.join('') };
     }
     formatCoverage(covered, total, rate) {
         if (covered < 0 || total < 0) {
-            return Promise.reject("The covered lines and total lines must be non-negative.");
+            core.warning("The covered lines and total lines must be non-negative.");
         }
         if (rate < 0 || rate > 1) {
-            return Promise.reject('The line rate must be between 0 and 1.');
+            core.warning("The line rate must be between 0 and 1.");
         }
         return `${covered}/${total} - ${(rate * 100).toFixed(2)}%`;
     }
     async getCoverageNode() {
+        // Simulate coverage data
         return {
             lineRate: 0.85,
             linesCovered: 170,
@@ -27721,7 +27726,7 @@ async function run() {
         const theRunner = new runner.CoverageParserRunner();
         const outcome = await theRunner.run();
         if (outcome.exitCode != 0) {
-            core.setFailed(messages_1.messages.failed_run_non_zero + outcome.exitCode);
+            // TODO: When implement cobertura transforming
         }
         else {
             core.info(messages_1.messages.exit_code + outcome.exitCode);
