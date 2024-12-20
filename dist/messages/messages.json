@@ -1,8 +1,8 @@
 {
-  "run_started": "Running C/C++test in ",
-  "run_failed": "Failed to run C/C++test",
-  "exit_code": "C/C++test run finished with code ",
-  "failed_run_non_zero": "C/C++test run failed with a non-zero exit code: ",
-  "wrk_dir_not_exist": "Working directory does not exist: ",
-  "cmd_cannot_be_empty": "Command line cannot be empty."
+  "run_failed": "Failed to parse the coverage xml report",
+  "exit_code": "The coverage xml report parsing finished with code ",
+  "missing_coverage_data": "Coverage data is missing or incomplete in the report.",
+  "invalid_package_data": "Coverage package data is missing or incomplete in the report.",
+  "invalid_coverage_rate": "Coverage line rate must be between 0 and 1.",
+  "negative_coverage_values": "Coverage values (covered lines, total lines) must be non-negative."
 }

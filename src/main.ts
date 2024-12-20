@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
+import * as runner from "./runner";
 
 import { messages } from './messages';
-import * as runner from "./runner";
 
 export async function run() {
     try {

@@ -7,12 +7,12 @@ interface ISerializable<T> {
 
 class Messages implements ISerializable<Messages>
 {
-    run_started!: string;
     run_failed!: string;
     exit_code!: string;
-    failed_run_non_zero!: string;
-    wrk_dir_not_exist!: string;
-    cmd_cannot_be_empty!: string;
+    missing_coverage_data!: string;
+    invalid_package_data!: string;
+    invalid_coverage_rate!: string;
+    negative_coverage_values!: string;
 
     deserialize(jsonPath: string) : Messages {
         const buf = fs.readFileSync(jsonPath);

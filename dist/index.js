@@ -31,6 +31,7 @@ exports.messages = new Messages().deserialize(jsonPath);
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CoverageParserRunner = void 0;
 const core = __nccwpck_require__(7484);
+const messages_1 = __nccwpck_require__(6250);
 class CoverageParserRunner {
     async run() {
         // TODO: Simulate coverageNode input for testing the structure implemented in current task
@@ -40,8 +41,7 @@ class CoverageParserRunner {
     }
     async generateCoverageSummary(coverageNode) {
         if (!coverageNode) {
-            core.warning("No coverage data found.");
-            return;
+            throw new Error(messages_1.messages.missing_coverage_data);
         }
         const markdown = this.generateMarkdownContent(coverageNode.packages);
         const totalCoverage = this.formatCoverage(coverageNode.linesCovered, coverageNode.linesValid, coverageNode.lineRate);
@@ -54,9 +54,7 @@ class CoverageParserRunner {
     }
     generateMarkdownContent(packagesNode) {
         if (!packagesNode || packagesNode.size === 0) {
-            // core.warning("No packages found in coverage data.");
-            // return '';
-            throw new Error("No packages found in coverage data");
+            throw new Error(messages_1.messages.missing_coverage_data);
         }
         const markdownRows = [];
         for (const [packageName, packageNode] of packagesNode.entries()) {
@@ -71,8 +69,7 @@ class CoverageParserRunner {
     }
     calculatePackageCoverage(packageNode) {
         if (!packageNode) {
-            core.warning("Package node is missing.");
-            return { coveredLines: 0, totalLines: 0, markdownContent: '' };
+            throw new Error(messages_1.messages.invalid_package_data);
         }
         let coveredLines = 0;
         let totalLines = 0;
@@ -87,10 +84,10 @@ class CoverageParserRunner {
     }
     formatCoverage(covered, total, rate) {
         if (covered < 0 || total < 0) {
-            core.warning("The covered lines and total lines must be non-negative.");
+            throw new Error(messages_1.messages.negative_coverage_values);
         }
         if (rate < 0 || rate > 1) {
-            core.warning("The line rate must be between 0 and 1.");
+            throw new Error(messages_1.messages.invalid_coverage_rate);
         }
         return `${covered}/${total} - ${(rate * 100).toFixed(2)}%`;
     }
@@ -27655,8 +27652,8 @@ var exports = __webpack_exports__;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __nccwpck_require__(7484);
-const messages_1 = __nccwpck_require__(6250);
 const runner = __nccwpck_require__(1924);
+const messages_1 = __nccwpck_require__(6250);
 async function run() {
     try {
         // TODO: Add run options (eg., covReportDir) and pass them to run()
