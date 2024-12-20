@@ -19,6 +19,8 @@ export async function run() {
         if (error instanceof Error) {
             core.error(error);
             core.setFailed(error.message);
+        } else {
+            core.setFailed(`Unknown error: ${error}`);
         }
     }
 }

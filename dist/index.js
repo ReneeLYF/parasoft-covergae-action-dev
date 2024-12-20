@@ -27736,6 +27736,9 @@ async function run() {
             core.error(error);
             core.setFailed(error.message);
         }
+        else {
+            core.setFailed(`Unknown error: ${error}`);
+        }
     }
 }
 if (require.main === require.cache[eval('__filename')]) {
