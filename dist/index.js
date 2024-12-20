@@ -54,8 +54,9 @@ class CoverageParserRunner {
     }
     generateMarkdownContent(packagesNode) {
         if (!packagesNode || packagesNode.size === 0) {
-            core.warning("No packages found in coverage data.");
-            return '';
+            // core.warning("No packages found in coverage data.");
+            // return '';
+            throw new Error("No packages found in coverage data");
         }
         const markdownRows = [];
         for (const [packageName, packageNode] of packagesNode.entries()) {

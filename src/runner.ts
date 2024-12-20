@@ -10,7 +10,7 @@ export class CoverageParserRunner {
         return { exitCode: 0 };
     }
 
-    private async generateCoverageSummary(coverageNode: types.CoberturaCoverageNode) {
+    private async generateCoverageSummary(coverageNode: types.CoberturaCoverageNode | undefined) {
         if (!coverageNode) {
             core.warning("No coverage data found.");
             return;
@@ -29,8 +29,9 @@ export class CoverageParserRunner {
 
     private generateMarkdownContent(packagesNode: Map<string, types.CoberturaPackageNode>) {
         if (!packagesNode || packagesNode.size === 0) {
-            core.warning("No packages found in coverage data.");
-            return '';
+            // core.warning("No packages found in coverage data.");
+            // return '';
+            throw new Error("No packages found in coverage data");
         }
 
         const markdownRows: string[] = [];
